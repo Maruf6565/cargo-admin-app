@@ -22,24 +22,47 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          git zip unzip openjdk-17-jdk \
+          git zip unzip \
+          openjdk-17-jdk \
           autoconf libtool pkg-config \
           zlib1g-dev libffi-dev libssl-dev \
-          cmake build-essential
+          cmake build-essential \
+          libltdl-dev
 
     - name: Install Python dependencies
       run: |
-        pip install buildozer cython==0.29.37 virtualenv
+        pip install --upgrade pip
+        pip install buildozer==1.5.0
+        pip install cython==0.29.37
+        pip install virtualenv
+
+    - name: Set up Android SDK and NDK
+      run: |
+        export ANDROIDSDK="${HOME}/.buildozer/android/platform/android-sdk"
+        export ANDROIDNDK="${HOME}/.buildozer/android/platform/android-ndk-r25b"
+        export ANDROIDAPI="33"
+        export ANDROIDMINAPI="26"
+        echo "ANDROIDSDK=$ANDROIDSDK" >> $GITHUB_ENV
+        echo "ANDROIDNDK=$ANDROIDNDK" >> $GITHUB_ENV
+        echo "ANDROIDAPI=$ANDROIDAPI" >> $GITHUB_ENV
+        echo "ANDROIDMINAPI=$ANDROIDMINAPI" >> $GITHUB_ENV
 
     - name: Build APK
       run: |
-        yes | buildozer android debug
+        yes | buildozer -v android debug 2>&1
       env:
         ANDROIDAPI: "33"
         ANDROIDMINAPI: "26"
 
-    - name: Upload APK artifact
+    - name: Show bin directory
+      if: always()
+      run: |
+        ls -la bin/ || echo "bin/ папка не найдена"
+
+    - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: cargo-admin-apk
         path: bin/*.apk
+        retention-days: 7
