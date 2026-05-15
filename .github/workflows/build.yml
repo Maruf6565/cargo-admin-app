@@ -39,7 +39,7 @@ jobs:
         ANDROIDMINAPI: "26"
 
     - name: Upload APK artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cargo-admin-apk
         path: bin/*.apk
